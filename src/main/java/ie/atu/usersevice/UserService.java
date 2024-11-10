@@ -3,6 +3,8 @@ package ie.atu.usersevice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UserService {
     private UserRepository userRepository;
@@ -17,13 +19,12 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public String login(String username, String password) {
-        //check if password is correct
-        UserDetails user = userRepository.findByUsername(username);
-        return username;
+    public Optional<UserDetails> login(String username, String password) {
+        Optional<UserDetails> user = userRepository.findByUsername(username);
+        return user.filter(u -> u.getPassword().equals(password));
     }
 
-    public UserDetails getUserProfile(String username) {
+    public Optional<UserDetails> getUserProfile(String username) {
         return userRepository.findByUsername(username);
     }
 
