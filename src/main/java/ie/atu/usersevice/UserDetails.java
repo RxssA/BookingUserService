@@ -1,8 +1,9 @@
 package ie.atu.usersevice;
 
 import jakarta.persistence.*;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
+@Document(collection = "users")
 public class UserDetails
 {
     @Id
