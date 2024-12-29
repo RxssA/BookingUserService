@@ -7,7 +7,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class UserDetails
 {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(unique=true)
     private String username;
@@ -17,7 +16,6 @@ public class UserDetails
     private String lastName;
     private String email;
     private String phone;
-    private String role;
 
     public int getId() {
         return id;
@@ -75,11 +73,6 @@ public class UserDetails
         this.phone = phone;
     }
 
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
 }
+
+
