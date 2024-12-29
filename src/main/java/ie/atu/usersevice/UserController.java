@@ -1,10 +1,11 @@
 package ie.atu.usersevice;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.server.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Optional;
 
 @RestController
@@ -41,4 +42,5 @@ public class UserController {
     public Optional<UserDetails> getUserProfile(@PathVariable String username) {
         return userService.getUserProfile(username);
     }
+
 }
