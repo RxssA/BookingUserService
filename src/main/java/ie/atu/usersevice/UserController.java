@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -28,15 +30,18 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestBody UserDetails userDetails) {
-        Optional<String> user = Optional.ofNullable(String.valueOf(userService.login(userDetails.getUsername(), userDetails.getPassword())));
-        if (user.isPresent()){
-            return new ResponseEntity<>(user.get(), HttpStatus.OK);
+    public ResponseEntity<?> loginUser(@RequestBody UserDetails userDetails) {
+        // Validate user credentials (mock example here)
+        if (!"correctUsername".equals(userDetails.getUsername()) || !"correctPassword".equals(userDetails.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
-        else {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+
+        // Generate token if valid
+        String token = JwtUtil.generateToken(userDetails.getUsername());
+        return ResponseEntity.ok(Map.of("token", token));
     }
+
+
     @GetMapping("/user/{username}")
     public Optional<UserDetails> getUserProfile(@PathVariable String username) {
         return userService.getUserProfile(username);

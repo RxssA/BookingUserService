@@ -1,13 +1,14 @@
 package ie.atu.usersevice;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Optional;
 
@@ -15,94 +16,104 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@WebMvcTest(UserController.class)
 class UserControllerTest {
+    @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockBean
     private UserService userService;
 
-    @InjectMocks
-    private UserController userController;
+    private ObjectMapper objectMapper;
+    private UserDetails userDetails;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
+        objectMapper = new ObjectMapper();
+        userDetails = new UserDetails();
+        userDetails.setId(1);
+        userDetails.setUsername("testuser");
+        userDetails.setPassword("password123");
+        userDetails.setFirstName("John");
+        userDetails.setLastName("Pork");
+        userDetails.setEmail("john.Pork@example.com");
+        userDetails.setPhone("1234567890");
     }
 
     @Test
     void registerUser_ShouldReturnCreatedUser() throws Exception {
-        UserDetails userDetails = new UserDetails();
-        when(userService.register(any(UserDetails.class))).thenReturn(userDetails);
+        when(userService.register(Mockito.any(UserDetails.class))).thenReturn(userDetails);
 
         mockMvc.perform(post("/api/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"johnPork\",\"password\":\"password123\",\"name\":\"John Pork\"}"))
+                        .content(objectMapper.writeValueAsString(userDetails)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.username").value("JohnPork"))
-                .andExpect(jsonPath("$.name").value("John Pork"));
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.username").value("testuser"))
+                .andExpect(jsonPath("$.email").value("john.Pork@example.com"));
 
-        verify(userService, times(1)).register(any(UserDetails.class));
+        verify(userService, times(1)).register(Mockito.any(UserDetails.class));
     }
 
     @Test
-    void registerUser_ShouldReturnInternalServerErrorOnException() throws Exception {
-        when(userService.register(any(UserDetails.class))).thenThrow(new RuntimeException("Error"));
+    void registerUser_ShouldReturnInternalServerErrorOnFailure() throws Exception {
+        when(userService.register(Mockito.any(UserDetails.class))).thenThrow(new RuntimeException("Database error"));
 
         mockMvc.perform(post("/api/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"JohnPork\",\"password\":\"password123\",\"name\":\"John Pork\"}"))
+                        .content(objectMapper.writeValueAsString(userDetails)))
                 .andExpect(status().isInternalServerError());
 
-        verify(userService, times(1)).register(any(UserDetails.class));
+        verify(userService, times(1)).register(Mockito.any(UserDetails.class));
     }
 
-    /*@Test
-    void loginUser_ShouldReturnOkWhenUserExists() throws Exception {
-        when(userService.login("JohnPork", "password123")).thenReturn(Optional.of("token123"));
+    @Test
+    void loginUser_ShouldReturnSuccess() throws Exception {
+        when(userService.login("testuser", "password123")).thenReturn(Optional.of(userDetails));
 
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"JohnPork\",\"password\":\"password123\"}"))
+                        .content(objectMapper.writeValueAsString(userDetails)))
                 .andExpect(status().isOk())
-                .andExpect(content().string("token123"));
+                .andExpect(content().string("UserDetails(id=1, username=testuser, ...)"));
 
-        verify(userService, times(1)).login("john_doe", "password123");
-    }*/
+        verify(userService, times(1)).login("testuser", "password123");
+    }
 
     @Test
-    void loginUser_ShouldReturnInternalServerErrorWhenUserDoesNotExist() throws Exception {
-        when(userService.login("JohnPork", "password123")).thenReturn(Optional.empty());
+    void loginUser_ShouldReturnInternalServerErrorOnFailure() throws Exception {
+        when(userService.login("testuser", "wrongpassword")).thenReturn(Optional.empty());
 
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"JohnPork\",\"password\":\"password123\"}"))
+                        .content(objectMapper.writeValueAsString(userDetails)))
                 .andExpect(status().isInternalServerError());
 
-        verify(userService, times(1)).login("JohnPork", "password123");
+        verify(userService, times(1)).login("testuser", "wrongpassword");
     }
 
     @Test
-    void getUserProfile_ShouldReturnUserProfileWhenExists() throws Exception {
-        UserDetails userDetails = new UserDetails();
-        when(userService.getUserProfile("JohnPork")).thenReturn(Optional.of(userDetails));
+    void getUserProfile_ShouldReturnUserProfile() throws Exception {
+        when(userService.getUserProfile("testuser")).thenReturn(Optional.of(userDetails));
 
-        mockMvc.perform(get("/api/users/user/JohnPork"))
+        mockMvc.perform(get("/api/users/user/testuser")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("JohnPork"))
-                .andExpect(jsonPath("$.name").value("John Pork"));
+                .andExpect(jsonPath("$.username").value("testuser"))
+                .andExpect(jsonPath("$.email").value("john.Pork@example.com"));
 
-        verify(userService, times(1)).getUserProfile("JohnPork");
+        verify(userService, times(1)).getUserProfile("testuser");
     }
 
     @Test
-    void getUserProfile_ShouldReturnEmptyWhenUserDoesNotExist() throws Exception {
-        when(userService.getUserProfile("JohnPork")).thenReturn(Optional.empty());
+    void getUserProfile_ShouldReturnEmptyWhenNotFound() throws Exception {
+        when(userService.getUserProfile("nonexistentuser")).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/users/user/JohnPork"))
+        mockMvc.perform(get("/api/users/user/nonexistentuser")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().string(""));
 
-        verify(userService, times(1)).getUserProfile("JohnPork");
+        verify(userService, times(1)).getUserProfile("nonexistentuser");
     }
 }
