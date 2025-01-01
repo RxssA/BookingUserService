@@ -14,10 +14,11 @@ import java.util.Optional;
 public class UserController {
     private UserService userService;
 
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
+    public UserController(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
+
+    private UserRepository userRepository;
 
     @PostMapping("/register")
     public ResponseEntity<Object> registerUser(@RequestBody UserDetails userDetails) {
@@ -31,12 +32,18 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody UserDetails userDetails) {
-        // Validate user credentials (mock example here)
-        if (!"correctUsername".equals(userDetails.getUsername()) || !"correctPassword".equals(userDetails.getPassword())) {
+        System.out.println("Username: " + userDetails.getUsername());
+        System.out.println("Password: " + userDetails.getPassword());
+
+        // Fetch user from database
+        Optional<UserDetails> userFromDb = userRepository.findByUsername(userDetails.getUsername());
+
+        // Check if user exists and the password matches
+        if (userFromDb.isEmpty() || !userDetails.getPassword().equals(userFromDb.get().getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
 
-        // Generate token if valid
+        // Generate token
         String token = JwtUtil.generateToken(userDetails.getUsername());
         return ResponseEntity.ok(Map.of("token", token));
     }
