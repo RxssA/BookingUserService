@@ -7,21 +7,21 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class UserDetails
 {
     @Id
-    private int id;
+    private String id;
     @Column(unique=true)
     private String username;
-
     private String password;
     private String firstName;
     private String lastName;
     private String email;
     private String phone;
+    private String token;
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -73,6 +73,13 @@ public class UserDetails
         this.phone = phone;
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 }
 
 

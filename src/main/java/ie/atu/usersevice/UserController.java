@@ -13,12 +13,13 @@ import java.util.Optional;
 @RequestMapping("/api/users")
 public class UserController {
     private UserService userService;
+    private UserRepository userRepository;
 
     public UserController(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    private UserRepository userRepository;
+
 
     @PostMapping("/register")
     public ResponseEntity<Object> registerUser(@RequestBody UserDetails userDetails) {
@@ -32,19 +33,32 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody UserDetails userDetails) {
+        // Log incoming credentials for debugging (optional)
         System.out.println("Username: " + userDetails.getUsername());
         System.out.println("Password: " + userDetails.getPassword());
 
-        // Fetch user from database
+        // Fetch user from the database by username
         Optional<UserDetails> userFromDb = userRepository.findByUsername(userDetails.getUsername());
 
-        // Check if user exists and the password matches
-        if (userFromDb.isEmpty() || !userDetails.getPassword().equals(userFromDb.get().getPassword())) {
+        if (userFromDb.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
 
-        // Generate token
-        String token = JwtUtil.generateToken(userDetails.getUsername());
+        UserDetails existingUser = userFromDb.get();
+
+        // Check if the password matches
+        if (!existingUser.getPassword().equals(userDetails.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
+
+        // Generate a new token
+        String token = JwtUtil.generateToken(existingUser.getUsername());
+        existingUser.setToken(token);
+
+        // Update the user's token in the database
+        userRepository.save(existingUser);
+
+        // Return the token in the response
         return ResponseEntity.ok(Map.of("token", token));
     }
 
