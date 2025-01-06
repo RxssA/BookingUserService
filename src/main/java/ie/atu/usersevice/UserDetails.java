@@ -3,6 +3,8 @@ package ie.atu.usersevice;
 import jakarta.persistence.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
+
 @Document(collection = "users")
 public class UserDetails
 {
@@ -16,6 +18,7 @@ public class UserDetails
     private String email;
     private String phone;
     private String token;
+    private LocalDateTime lastLogin;
 
     public String getId() {
         return id;
@@ -79,6 +82,14 @@ public class UserDetails
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public LocalDateTime getLastLogin() {
+        return lastLogin;
+    }
+
+    public void setLastLogin(LocalDateTime lastLogin) {
+        this.lastLogin = lastLogin;
     }
 }
 

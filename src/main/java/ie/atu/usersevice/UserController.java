@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
@@ -33,7 +34,6 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody UserDetails userDetails) {
-        // Log incoming credentials for debugging (optional)
         System.out.println("Username: " + userDetails.getUsername());
         System.out.println("Password: " + userDetails.getPassword());
 
@@ -54,11 +54,10 @@ public class UserController {
         // Generate a new token
         String token = JwtUtil.generateToken(existingUser.getUsername());
         existingUser.setToken(token);
+        existingUser.setLastLogin(LocalDateTime.now());
 
-        // Update the user's token in the database
         userRepository.save(existingUser);
 
-        // Return the token in the response
         return ResponseEntity.ok(Map.of("token", token));
     }
 
