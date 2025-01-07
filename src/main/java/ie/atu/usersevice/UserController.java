@@ -65,10 +65,4 @@ public class UserController {
         return ResponseEntity.ok(Map.of("token", token));
     }
 
-
-    @GetMapping("/user/{username}")
-    public Optional<UserDetails> getUserProfile(@PathVariable String username) {
-        return userService.getUserProfile(username);
-    }
-
 }

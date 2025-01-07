@@ -15,7 +15,7 @@ public class UserService {
     }
 
     public UserDetails register(UserDetails user) {
-        //add set password stuff
+
         return userRepository.save(user);
     }
 
