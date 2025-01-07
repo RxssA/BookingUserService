@@ -5,7 +5,7 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # Copy the project JAR file into the container
-COPY target/UserService-0.0.1-SNAPSHOT.jar /app/user-service.jar
+COPY target/UserSevice-0.0.1-SNAPSHOT.jar /app/user-service.jar
 
 
 # Expose the port the service runs on
