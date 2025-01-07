@@ -17,8 +17,8 @@ public class UserDetails
     private String lastName;
     private String email;
     private String phone;
-    private String token;
-    private LocalDateTime lastLogin;
+    private String token = null;
+    private LocalDateTime lastLogin = null;
 
     public String getId() {
         return id;

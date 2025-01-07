@@ -16,19 +16,21 @@ public class UserController {
     private UserService userService;
     private UserRepository userRepository;
 
-    public UserController(UserRepository userRepository) {
+    public UserController(UserService userService, UserRepository userRepository) {
+        this.userService = userService;
         this.userRepository = userRepository;
     }
 
-
-
     @PostMapping("/register")
     public ResponseEntity<Object> registerUser(@RequestBody UserDetails userDetails) {
+        userDetails.setToken(null);
+        userDetails.setLastLogin(null);
         try {
             UserDetails newUser = userService.register(userDetails);
             return new ResponseEntity<>(newUser, HttpStatus.CREATED);
         }catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            e.printStackTrace(); // Log the exception
+            return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -39,7 +41,8 @@ public class UserController {
 
         // Fetch user from the database by username
         Optional<UserDetails> userFromDb = userRepository.findByUsername(userDetails.getUsername());
-
+        userDetails.setToken(null);
+        userDetails.setLastLogin(null);
         if (userFromDb.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
@@ -54,6 +57,7 @@ public class UserController {
         // Generate a new token
         String token = JwtUtil.generateToken(existingUser.getUsername());
         existingUser.setToken(token);
+        
         existingUser.setLastLogin(LocalDateTime.now());
 
         userRepository.save(existingUser);
