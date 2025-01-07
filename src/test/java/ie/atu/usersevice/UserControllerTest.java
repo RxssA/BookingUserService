@@ -31,7 +31,7 @@ class UserControllerTest {
     void setUp() {
         objectMapper = new ObjectMapper();
         userDetails = new UserDetails();
-        userDetails.setId(1);
+        //userDetails.setId(1);
         userDetails.setUsername("testuser");
         userDetails.setPassword("password123");
         userDetails.setFirstName("John");

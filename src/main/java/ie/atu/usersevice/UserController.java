@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
@@ -13,31 +14,54 @@ import java.util.Optional;
 @RequestMapping("/api/users")
 public class UserController {
     private UserService userService;
+    private UserRepository userRepository;
 
-    @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserRepository userRepository) {
         this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/register")
     public ResponseEntity<Object> registerUser(@RequestBody UserDetails userDetails) {
+        userDetails.setToken(null);
+        userDetails.setLastLogin(null);
         try {
             UserDetails newUser = userService.register(userDetails);
             return new ResponseEntity<>(newUser, HttpStatus.CREATED);
         }catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            e.printStackTrace(); // Log the exception
+            return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody UserDetails userDetails) {
-        // Validate user credentials (mock example here)
-        if (!"correctUsername".equals(userDetails.getUsername()) || !"correctPassword".equals(userDetails.getPassword())) {
+        System.out.println("Username: " + userDetails.getUsername());
+        System.out.println("Password: " + userDetails.getPassword());
+
+        // Fetch user from the database by username
+        Optional<UserDetails> userFromDb = userRepository.findByUsername(userDetails.getUsername());
+        userDetails.setToken(null);
+        userDetails.setLastLogin(null);
+        if (userFromDb.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
 
-        // Generate token if valid
-        String token = JwtUtil.generateToken(userDetails.getUsername());
+        UserDetails existingUser = userFromDb.get();
+
+        // Check if the password matches
+        if (!existingUser.getPassword().equals(userDetails.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
+
+        // Generate a new token
+        String token = JwtUtil.generateToken(existingUser.getUsername());
+        existingUser.setToken(token);
+        
+        existingUser.setLastLogin(LocalDateTime.now());
+
+        userRepository.save(existingUser);
+
         return ResponseEntity.ok(Map.of("token", token));
     }
 
