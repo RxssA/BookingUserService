@@ -1,0 +1,49 @@
+name: CI Pipeline for BookingUserService
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the code
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up JDK
+      - name: Set up JDK 20
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '20'
+
+      # Step 3: Cache Maven Dependencies
+      - name: Cache Maven Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven
+
+      # Step 4: Build with Maven
+      - name: Build with Maven
+        run: mvn clean package
+
+      # Step 5: Run Unit Tests
+      - name: Run Tests
+        run: mvn test
+
+      # Step 6: Upload Build Artifact (Optional)
+      - name: Upload JAR Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: booking-user-service-jar
+          path: target/UserSevice-0.0.1-SNAPSHOT.jar
