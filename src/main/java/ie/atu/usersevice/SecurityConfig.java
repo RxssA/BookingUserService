@@ -18,7 +18,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/register", "/api/users/login").permitAll()
                         .anyRequest().authenticated() // Protect all other endpoints
                 )
-                .httpBasic(httpBasic -> httpBasic.disable()) // Disable Basic Auth completely
+                .httpBasic(httpBasic -> httpBasic.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Stateless JWT auth
         return http.build();
     }
