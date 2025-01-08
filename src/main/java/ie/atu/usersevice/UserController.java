@@ -31,7 +31,7 @@ public class UserController {
             UserDetails newUser = userService.register(userDetails);
             return new ResponseEntity<>(newUser, HttpStatus.CREATED);
         }catch (Exception e) {
-            e.printStackTrace(); // Log the exception
+            e.printStackTrace();
             return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

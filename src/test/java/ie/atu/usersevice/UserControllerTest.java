@@ -15,10 +15,13 @@ import java.util.Optional;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UserController.class)
 public class UserControllerTest {
+    @MockBean
+    private AdminServiceClient adminServiceClient;
 
     @Autowired
     private MockMvc mockMvc;
@@ -29,6 +32,7 @@ public class UserControllerTest {
     @MockBean
     private UserRepository userRepository;
 
+    @Autowired
     private ObjectMapper objectMapper;
 
     @BeforeEach
@@ -95,9 +99,10 @@ public class UserControllerTest {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(user))
                         .with(csrf()))
-                .andExpect(status().isUnauthorized())
-                .andExpect(content().string("Invalid credentials"));
+                .andExpect(status().isUnauthorized())  // Expect 401 Unauthorized
+                .andExpect(content().string("Invalid credentials"));  // Expect the error message
     }
+
 
     @Test
     public void testRegisterUserError() throws Exception {
