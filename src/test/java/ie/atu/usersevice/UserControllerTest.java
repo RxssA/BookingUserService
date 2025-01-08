@@ -25,6 +25,9 @@ public class UserControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
+    private AdminServiceClient adminServiceClient;
+
+    @MockBean
     private UserService userService;
 
     @MockBean
