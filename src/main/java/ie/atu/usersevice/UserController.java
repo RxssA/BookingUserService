@@ -69,7 +69,7 @@ public class UserController {
 
     @GetMapping("api/admins/{id}")
     public ResponseEntity<adminUser> getAdminDetails(@PathVariable String id) {
-        return adminServiceClient.getAdminById(id);
+        adminUser admin = adminServiceClient.getAllUsers();
+        return ResponseEntity.ok(admin);
     }
-
 }
