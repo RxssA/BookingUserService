@@ -72,8 +72,6 @@ public class UserControllerTest {
         user.setPassword("testPassword");
 
         String token = "generated-token";
-
-        // Mocking repository and service method correctly
         when(userRepository.findByUsername("testUsername")).thenReturn(Optional.of(user));
         when(userService.login("testUsername", "testPassword")).thenReturn(Optional.of(user));
         when(JwtUtil.generateToken("testUsername")).thenReturn(token);
