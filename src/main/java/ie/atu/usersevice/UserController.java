@@ -15,10 +15,12 @@ import java.util.Optional;
 public class UserController {
     private UserService userService;
     private UserRepository userRepository;
+    private AdminServiceClient adminServiceClient;
 
-    public UserController(UserService userService, UserRepository userRepository) {
-        this.userService = userService;
+    public UserController(UserRepository userRepository, UserService userService, AdminServiceClient adminServiceClient) {
         this.userRepository = userRepository;
+        this.userService = userService;
+        this.adminServiceClient = adminServiceClient;
     }
 
     @PostMapping("/register")
@@ -63,6 +65,11 @@ public class UserController {
         userRepository.save(existingUser);
 
         return ResponseEntity.ok(Map.of("token", token));
+    }
+
+    @GetMapping("api/admins/{id}")
+    public ResponseEntity<adminUser> getAdminDetails(@PathVariable String id) {
+        return adminServiceClient.getAdminById(id);
     }
 
 }
